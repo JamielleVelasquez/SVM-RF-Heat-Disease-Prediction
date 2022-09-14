@@ -3,6 +3,7 @@
 from imblearn.over_sampling import SMOTE
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import LinearSVC
 from sklearn.model_selection import train_test_split
 import pandas as pd
 
@@ -47,10 +48,12 @@ random_forest = RandomForestClassifier()
 # RF w/ SMOTE
 random_forest_smote = random_forest.fit(
     smote_train_X, smote_train_Y)
+print('RANDOM FOREST')
 print('Random Forest w/ SMOTE Test Set Accuracy: ', end="")
 print(random_forest_smote.score(smote_test_X, smote_test_Y))
 print('Random Forest w/ SMOTE Training Set Accuracy: ', end="")
 print(random_forest_smote.score(smote_train_X, smote_train_Y))
+
 # RF w/o SMOTE
 random_forest_processed = random_forest.fit(
     processed_train_X, processed_train_Y)
@@ -58,15 +61,34 @@ print('Random Forest w/o SMOTE Test Set Accuracy: ', end="")
 print(random_forest_processed.score(processed_test_X, processed_test_Y))
 print('Random Forest w/o SMOTE Training Set Accuracy: ', end="")
 print(random_forest_processed.score(processed_train_X, processed_train_Y))
+print()
 # TODO: Adjust RF Hyperparameters to avoid overfitting
 # Hyperparameters: refer to documentation.
 
-#TODO: SVM
-# https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
-# SVM w/ SMOTE
-# SVM w/o SMOTE
+#SVM
+#https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html
+#Define the SVM, LinearSVC was used because dataset is large.
+lsvc = LinearSVC(dual = False)
+#Dual is set to false because n_samples > n_features
+# print (lsvc)
+
+#SVM w/ SMOTE
+lsvc_smote = lsvc.fit(smote_train_X, smote_train_Y)
+print('SUPPORT VECTOR MACHINE')
+print('SVM w/ SMOTE Test Set Accuracy: ', end="")
+print(lsvc.score(smote_test_X, smote_test_Y))
+print('SVM w/ SMOTE Training Set Accuracy: ', end="")
+print(lsvc.score(smote_train_X, smote_train_Y))
+
+#SVM w/o SMOTE
+lsvc_smote = lsvc.fit(processed_train_X, processed_train_Y)
+print('SVM w/o SMOTE Test Set Accuracy: ', end="")
+print(lsvc.score(processed_test_X, processed_test_Y))
+print('SVM w/o SMOTE Training Set Accuracy: ', end="")
+print(lsvc.score(processed_train_X, processed_train_Y))
 # TODO: Adjust SVM Hyperparameters
 # Hyperparameters: refer to documentation.
+
 
 #TODO: MV
 # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html
