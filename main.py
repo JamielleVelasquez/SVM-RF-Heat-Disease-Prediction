@@ -135,7 +135,8 @@ svm_parameters = {
 svc = SVC()
 
 # Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
-svc_searched = SVC()
+svc_searched = GridSearchCV(
+    estimator=svc, param_grid=svm_parameters, verbose=1)
 
 # SVM w/ SMOTE
 svc_smote = svc_searched.fit(smote_train_X, smote_train_Y)
