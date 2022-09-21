@@ -3,15 +3,15 @@
 from imblearn.over_sampling import SMOTE
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import LinearSVC
-from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.model_selection import train_test_split, GridSearchCV
 import pandas as pd
 
 # Using panda.io to read the dataset
 unprocessed_data_X = pd.read_csv("heart.csv")
 unprocessed_data_y = unprocessed_data_X.loc[:, "target"]
 
-# Feature Selection
+# Feature Selection using a chi-squared scoring function
 # https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectKBest.html
 feature_selection = SelectKBest(chi2, k=11)
 processed_data_X = feature_selection.fit_transform(
@@ -44,55 +44,136 @@ smote_train_X, smote_test_X, smote_train_Y, smote_test_Y = train_test_split(
 
 # RF
 # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
+
+# TODO: Adjust RF Hyperparameters to avoid overfitting
+# Random Forest Hyperparameter grids
+# https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
+# Refer to Random Forest documentation for possible parameter values
+
+n_estimators = [100]
+criterion = ["gini", "entropy", "log_loss"]
+# None or int
+max_depth = [None]
+min_samples_split = [2]
+min_samples_leaf = [1]
+min_weight_fraction_leaf = [0.0]
+max_features = ["sqrt", "log2", None]
+# None or int
+max_leaf_nodes = [None]
+min_impurity_decrease = [0.0]
+bootstrap = [True, False]
+
+random_forest_parameters = {
+    'n_estimators': n_estimators,
+    'criterion': criterion,
+    'max_depth': max_depth,
+    'min_samples_split': min_samples_split,
+    'min_samples_leaf': min_samples_leaf,
+    'min_weight_fraction_leaf': min_weight_fraction_leaf,
+    'max_features': max_features,
+    'max_leaf_nodes': max_leaf_nodes,
+    'min_impurity_decrease': min_impurity_decrease,
+    'bootstrap': bootstrap,
+}
+
 random_forest = RandomForestClassifier()
+
+# Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
+random_forest_searched = GridSearchCV(
+    estimator=random_forest, param_grid=random_forest_parameters, verbose=1)
+
 # RF w/ SMOTE
-random_forest_smote = random_forest.fit(
-    smote_train_X, smote_train_Y)
-print('RANDOM FOREST')
+# random_forest_smote = random_forest_searched.fit(
+#    smote_train_X, smote_train_Y)
+print('---RANDOM FOREST---')
 print('Random Forest w/ SMOTE Test Set Accuracy: ', end="")
-print(random_forest_smote.score(smote_test_X, smote_test_Y))
+#print(random_forest_smote.score(smote_test_X, smote_test_Y))
 print('Random Forest w/ SMOTE Training Set Accuracy: ', end="")
-print(random_forest_smote.score(smote_train_X, smote_train_Y))
+#print(random_forest_smote.score(smote_train_X, smote_train_Y))
+# print(random_forest_searched.best_params_)
 
 # RF w/o SMOTE
-random_forest_processed = random_forest.fit(
-    processed_train_X, processed_train_Y)
+# random_forest_processed = random_forest_searched.fit(
+#   processed_train_X, processed_train_Y)
 print('Random Forest w/o SMOTE Test Set Accuracy: ', end="")
-print(random_forest_processed.score(processed_test_X, processed_test_Y))
+#print(random_forest_processed.score(processed_test_X, processed_test_Y))
 print('Random Forest w/o SMOTE Training Set Accuracy: ', end="")
-print(random_forest_processed.score(processed_train_X, processed_train_Y))
+#print(random_forest_processed.score(processed_train_X, processed_train_Y))
 print()
-# TODO: Adjust RF Hyperparameters to avoid overfitting
-# Hyperparameters: refer to documentation.
 
-#SVM
-#https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html
-#Define the SVM, LinearSVC was used because dataset is large.
-lsvc = LinearSVC(dual = False)
-#Dual is set to false because n_samples > n_features
-# print (lsvc)
+# SVM
+# https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
 
-#SVM w/ SMOTE
-lsvc_smote = lsvc.fit(smote_train_X, smote_train_Y)
-print('SUPPORT VECTOR MACHINE')
-print('SVM w/ SMOTE Test Set Accuracy: ', end="")
-print(lsvc.score(smote_test_X, smote_test_Y))
-print('SVM w/ SMOTE Training Set Accuracy: ', end="")
-print(lsvc.score(smote_train_X, smote_train_Y))
-
-#SVM w/o SMOTE
-lsvc_smote = lsvc.fit(processed_train_X, processed_train_Y)
-print('SVM w/o SMOTE Test Set Accuracy: ', end="")
-print(lsvc.score(processed_test_X, processed_test_Y))
-print('SVM w/o SMOTE Training Set Accuracy: ', end="")
-print(lsvc.score(processed_train_X, processed_train_Y))
 # TODO: Adjust SVM Hyperparameters
-# Hyperparameters: refer to documentation.
+# SVM Hyperparameter grids
+# https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
+# Refer to SVM documentation for possible parameter values
 
+C = [1.0]
+kernel = ["linear", "poly", "rbf", "sigmoid", "precomputed"]
+degree = [3]
+# "scale", "auto" or float
+gamma = ["scale", "auto"]
+coef0 = [0.0]
+shrinking = [True, False]
+probability = [True, False]
+tol = [1e-3]
+class_weight = [None, "balanced"]
 
-#TODO: MV
+svm_parameters = {
+    'C': C,
+    'kernel': kernel,
+    'degree': degree,
+    'gamma': gamma,
+    'coef0': coef0,
+    'shrinking': shrinking,
+    'probability': probability,
+    'tol': tol,
+    'class_weight': class_weight
+}
+
+svc = SVC()
+
+# Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
+svc_searched = SVC()
+
+# SVM w/ SMOTE
+svc_smote = svc_searched.fit(smote_train_X, smote_train_Y)
+print('---SUPPORT VECTOR MACHINE---')
+print('SVM w/ SMOTE Test Set Accuracy: ', end="")
+print(svc_smote.score(smote_test_X, smote_test_Y))
+print('SVM w/ SMOTE Training Set Accuracy: ', end="")
+print(svc_smote.score(smote_train_X, smote_train_Y))
+
+# SVM w/o SMOTE
+svc_processed = svc_searched.fit(processed_train_X, processed_train_Y)
+print('SVM w/o SMOTE Test Set Accuracy: ', end="")
+print(svc_processed.score(processed_test_X, processed_test_Y))
+print('SVM w/o SMOTE Training Set Accuracy: ', end="")
+print(svc_processed.score(processed_train_X, processed_train_Y))
+print()
+
+# TODO: MV
 # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html
-# MV w/ SMOTE
-# MV w/o SMOTE
+
 # TODO: Adjust MV Hyperparameters
-# Hyperparameters: refer to documentation.
+# MV Hyperparameter grids
+# https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
+# Refer to MV documentation for possible parameter values
+
+# Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
+
+print('---MAJORITY VOTING---')
+# MV w/ SMOTE
+# fit
+print('MV w/ SMOTE Test Set Accuracy: ', end="")
+# print(score)
+print('MV w/ SMOTE Training Set Accuracy: ', end="")
+# print(score)
+
+# MV w/o SMOTE
+# fit
+print('MV w/o SMOTE Test Set Accuracy: ', end="")
+# print(score)
+print('MV w/o SMOTE Training Set Accuracy: ', end="")
+# print(score)
