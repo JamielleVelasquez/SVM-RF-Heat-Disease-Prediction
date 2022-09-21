@@ -1,9 +1,5 @@
-# Refer here to install python and scikit-learn:
-# https://scikit-learn.org/stable/install.html#installation-instructions
+# Before running this file, activate the venv using "sklearn-venv\Scripts\activate"
 
-<<<<<<< Updated upstream
-from sklearn import svm
-=======
 from imblearn.over_sampling import SMOTE
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.ensemble import RandomForestClassifier
@@ -37,7 +33,7 @@ smote_processed_data_X, smote_processed_data_Y = SMOTE(
 
 # 27 new entries were created by SMOTE to oversample the minority
 
-# 70%/30% Training Test Split wew
+# 70%/30% Training Test Split
 processed_train_X, processed_test_X, processed_train_Y, processed_test_Y = train_test_split(
     processed_data_X, processed_data_Y, test_size=0.3)
 smote_train_X, smote_test_X, smote_train_Y, smote_test_Y = train_test_split(
@@ -182,4 +178,3 @@ print('MV w/o SMOTE Test Set Accuracy: ', end="")
 # print(score)
 print('MV w/o SMOTE Training Set Accuracy: ', end="")
 # print(score)
->>>>>>> Stashed changes
