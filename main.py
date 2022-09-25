@@ -5,7 +5,20 @@ from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split
+
+#for MV
+from sklearn import model_selection
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
+from sklearn.ensemble import VotingClassifier
+from sklearn import datasets
+import matplotlib.pyplot as plt
+
 import pandas as pd
+
+plt.style.use('ggplot')
 
 # Using panda.io to read the dataset
 unprocessed_data_X = pd.read_csv("heart.csv")
@@ -83,25 +96,24 @@ random_forest_searched = GridSearchCV(
     estimator=random_forest, param_grid=random_forest_parameters, verbose=1)
 
 # RF w/ SMOTE
-# random_forest_smote = random_forest_searched.fit(
-#    smote_train_X, smote_train_Y)
-print('---RANDOM FOREST---')
+random_forest_smote = random_forest.fit(
+    smote_train_X, smote_train_Y)
 print('Random Forest w/ SMOTE Test Set Accuracy: ', end="")
-#print(random_forest_smote.score(smote_test_X, smote_test_Y))
+print(random_forest_smote.score(smote_test_X, smote_test_Y))
 print('Random Forest w/ SMOTE Training Set Accuracy: ', end="")
-#print(random_forest_smote.score(smote_train_X, smote_train_Y))
-# print(random_forest_searched.best_params_)
-
+print(random_forest_smote.score(smote_train_X, smote_train_Y))
 # RF w/o SMOTE
-# random_forest_processed = random_forest_searched.fit(
-#   processed_train_X, processed_train_Y)
+random_forest_processed = random_forest.fit(
+    processed_train_X, processed_train_Y)
 print('Random Forest w/o SMOTE Test Set Accuracy: ', end="")
-#print(random_forest_processed.score(processed_test_X, processed_test_Y))
+print(random_forest_processed.score(processed_test_X, processed_test_Y))
 print('Random Forest w/o SMOTE Training Set Accuracy: ', end="")
-#print(random_forest_processed.score(processed_train_X, processed_train_Y))
+print(random_forest_processed.score(processed_train_X, processed_train_Y))
 print()
 
 # SVM
+print('\n')
+#TODO: SVM
 # https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
 
 # TODO: Adjust SVM Hyperparameters
@@ -110,7 +122,7 @@ print()
 # Refer to SVM documentation for possible parameter values
 
 C = [1.0]
-kernel = ["linear", "poly", "rbf", "sigmoid", "precomputed"]
+kernel = ["linear", "poly", "rbf", "sigmoid"]
 degree = [3]
 # "scale", "auto" or float
 gamma = ["scale", "auto"]
@@ -155,6 +167,11 @@ print(svc_processed.score(processed_train_X, processed_train_Y))
 print()
 
 # TODO: MV
+#TODO: MV
+estimators = []
+model = svc
+estimators.append(('svm', model))
+ensemble = VotingClassifier(estimators)
 # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html
 
 # TODO: Adjust MV Hyperparameters
@@ -166,15 +183,18 @@ print()
 
 print('---MAJORITY VOTING---')
 # MV w/ SMOTE
-# fit
-print('MV w/ SMOTE Test Set Accuracy: ', end="")
-# print(score)
-print('MV w/ SMOTE Training Set Accuracy: ', end="")
-# print(score)
-
+majority_voting_smote = model_selection.cross_val_score(ensemble, smote_test_X, smote_test_Y)
+print('Majority Voting w/ SMOTE Test Set Accuracy: ', end="")
+print(majority_voting_smote.mean())
+majority_voting_smote_train = model_selection.cross_val_score(ensemble, smote_train_X, smote_train_Y)
+print('Majority Voting w/ SMOTE Training Set Accuracy: ', end="")
+print(majority_voting_smote_train.mean())
 # MV w/o SMOTE
-# fit
-print('MV w/o SMOTE Test Set Accuracy: ', end="")
-# print(score)
-print('MV w/o SMOTE Training Set Accuracy: ', end="")
-# print(score)
+majority_voting_processed = model_selection.cross_val_score(ensemble, processed_test_X, processed_test_Y)
+print('Majority Voting w/o SMOTE Test Set Accuracy: ', end="")
+print(majority_voting_processed.mean())
+majority_voting_processed_train = model_selection.cross_val_score(ensemble, processed_train_X, processed_train_Y)
+print('Majority Voting w/o SMOTE Training Set Accuracy: ', end="")
+print(majority_voting_processed_train.mean())
+# TODO: Adjust MV Hyperparameters
+# Hyperparameters: refer to documentation.
