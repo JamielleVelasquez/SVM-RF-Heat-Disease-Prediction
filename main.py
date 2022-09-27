@@ -13,7 +13,10 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from sklearn.ensemble import VotingClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
 from sklearn import datasets
+from sklearn.model_selection import cross_val_score
 import matplotlib.pyplot as plt
 
 import pandas as pd
@@ -98,6 +101,7 @@ random_forest_searched = GridSearchCV(
 # RF w/ SMOTE
 random_forest_smote = random_forest.fit(
     smote_train_X, smote_train_Y)
+random_forest_smote_test = random_forest.fit(smote_test_X, smote_test_Y)
 print('Random Forest w/ SMOTE Test Set Accuracy: ', end="")
 print(random_forest_smote.score(smote_test_X, smote_test_Y))
 print('Random Forest w/ SMOTE Training Set Accuracy: ', end="")
@@ -105,6 +109,7 @@ print(random_forest_smote.score(smote_train_X, smote_train_Y))
 # RF w/o SMOTE
 random_forest_processed = random_forest.fit(
     processed_train_X, processed_train_Y)
+random_forest_processed_test = random_forest.fit(processed_test_X, processed_test_Y)
 print('Random Forest w/o SMOTE Test Set Accuracy: ', end="")
 print(random_forest_processed.score(processed_test_X, processed_test_Y))
 print('Random Forest w/o SMOTE Training Set Accuracy: ', end="")
@@ -144,7 +149,7 @@ svm_parameters = {
     'class_weight': class_weight
 }
 
-svc = SVC()
+svc = SVC(probability=True)
 
 # Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
 svc_searched = GridSearchCV(
@@ -152,6 +157,7 @@ svc_searched = GridSearchCV(
 
 # SVM w/ SMOTE
 svc_smote = svc_searched.fit(smote_train_X, smote_train_Y)
+svc_smote_test = svc_searched.fit(smote_test_X, smote_test_Y)
 print('---SUPPORT VECTOR MACHINE---')
 print('SVM w/ SMOTE Test Set Accuracy: ', end="")
 print(svc_smote.score(smote_test_X, smote_test_Y))
@@ -160,6 +166,7 @@ print(svc_smote.score(smote_train_X, smote_train_Y))
 
 # SVM w/o SMOTE
 svc_processed = svc_searched.fit(processed_train_X, processed_train_Y)
+svc_processed_test = svc_searched.fit(processed_test_X, processed_test_Y)
 print('SVM w/o SMOTE Test Set Accuracy: ', end="")
 print(svc_processed.score(processed_test_X, processed_test_Y))
 print('SVM w/o SMOTE Training Set Accuracy: ', end="")
@@ -168,10 +175,19 @@ print()
 
 # TODO: MV
 #TODO: MV
-estimators = []
-model = svc
-estimators.append(('svm', model))
-ensemble = VotingClassifier(estimators)
+classifiers = [('RandomForest', random_forest), ('SVM', svc)]
+
+ensemble_smote = VotingClassifier(estimators = classifiers, voting='soft')
+ensemble_smote.fit(smote_train_X, smote_train_Y)
+predict_smote = ensemble_smote.predict(smote_test_X)
+score_smote = accuracy_score(smote_test_Y, predict_smote)
+print('Accuracy score for SMOTE data % d' % score_smote)
+
+ensemble_processed = VotingClassifier(estimators = classifiers, voting='soft')
+ensemble_processed.fit(processed_train_X, processed_train_Y)
+predict_processed = ensemble_processed.predict(processed_test_X)
+score_processed = accuracy_score(processed_test_Y, predict_processed)
+print('Accuracy score for preprocessed data % d' % score_processed)
 # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html
 
 # TODO: Adjust MV Hyperparameters
@@ -182,19 +198,28 @@ ensemble = VotingClassifier(estimators)
 # Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
 
 print('---MAJORITY VOTING---')
+
 # MV w/ SMOTE
-majority_voting_smote = model_selection.cross_val_score(ensemble, smote_test_X, smote_test_Y)
-print('Majority Voting w/ SMOTE Test Set Accuracy: ', end="")
-print(majority_voting_smote.mean())
-majority_voting_smote_train = model_selection.cross_val_score(ensemble, smote_train_X, smote_train_Y)
-print('Majority Voting w/ SMOTE Training Set Accuracy: ', end="")
-print(majority_voting_smote_train.mean())
+mv_rf_smote = []
+print('Majority Voting w/ SMOTE Random Forest Model Test Set Accuracy: ', end="")
+mv_rf_smote.append(cross_val_score(random_forest, smote_train_X, smote_train_Y, scoring='accuracy', cv=5).mean())
+print(mv_rf_smote)
+
+mv_rf_processed = []
+print('Majority Voting w/o SMOTE Random Forest Model Test Set Accuracy: ', end="")
+mv_rf_processed.append(cross_val_score(random_forest, processed_train_X, processed_train_Y, scoring='accuracy', cv=5).mean())
+print(mv_rf_processed)
+
+
 # MV w/o SMOTE
-majority_voting_processed = model_selection.cross_val_score(ensemble, processed_test_X, processed_test_Y)
-print('Majority Voting w/o SMOTE Test Set Accuracy: ', end="")
-print(majority_voting_processed.mean())
-majority_voting_processed_train = model_selection.cross_val_score(ensemble, processed_train_X, processed_train_Y)
-print('Majority Voting w/o SMOTE Training Set Accuracy: ', end="")
-print(majority_voting_processed_train.mean())
+mv_svm_smote = []
+print('Majority Voting w/ SMOTE SVM Model Test Set Accuracy: ', end="")
+mv_svm_smote.append(cross_val_score(svc, smote_train_X, smote_train_Y, scoring='accuracy', cv=5).mean())
+print(mv_svm_smote)
+
+mv_svm_processed = []
+print('Majority Voting w/o SMOTE SVM Model Test Set Accuracy: ', end="")
+mv_svm_processed.append(cross_val_score(svc, processed_test_X, processed_test_Y, scoring='accuracy', cv=5).mean())
+print(mv_svm_processed)
 # TODO: Adjust MV Hyperparameters
 # Hyperparameters: refer to documentation.
