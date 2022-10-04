@@ -1,5 +1,6 @@
 # Before running this file, activate the venv using "sklearn-venv\Scripts\activate"
 
+from tabnanny import verbose
 from imblearn.over_sampling import SMOTE
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.ensemble import RandomForestClassifier
@@ -55,61 +56,61 @@ smote_train_X, smote_test_X, smote_train_Y, smote_test_Y = train_test_split(
 # train_size - 70
 # shuffle default = True
 
-# RF
-# https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
+# # RF
+# # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
 
-# TODO: Adjust RF Hyperparameters to avoid overfitting
-# Random Forest Hyperparameter grids
-# https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
-# Refer to Random Forest documentation for possible parameter values
+# # TODO: Adjust RF Hyperparameters to avoid overfitting
+# # Random Forest Hyperparameter grids
+# # https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
+# # Refer to Random Forest documentation for possible parameter values
 
-n_estimators = [100]
-criterion = ["gini", "entropy", "log_loss"]
-# None or int
-max_depth = [None]
-min_samples_split = [2]
-min_samples_leaf = [1]
-min_weight_fraction_leaf = [0.0]
-max_features = ["sqrt", "log2", None]
-# None or int
-max_leaf_nodes = [None]
-min_impurity_decrease = [0.0]
-bootstrap = [True, False]
+# n_estimators = [100]
+# criterion = ["gini", "entropy", "log_loss"]
+# # None or int
+# max_depth = [None]
+# min_samples_split = [2]
+# min_samples_leaf = [1]
+# min_weight_fraction_leaf = [0.0]
+# max_features = ["sqrt", "log2", None]
+# # None or int
+# max_leaf_nodes = [None]
+# min_impurity_decrease = [0.0]
+# bootstrap = [True, False]
+# verbose = 2
+# random_forest_parameters = {
+#     'n_estimators': n_estimators,
+#     'criterion': criterion,
+#     'max_depth': max_depth,
+#     'min_samples_split': min_samples_split,
+#     'min_samples_leaf': min_samples_leaf,
+#     'min_weight_fraction_leaf': min_weight_fraction_leaf,
+#     'max_features': max_features,
+#     'max_leaf_nodes': max_leaf_nodes,
+#     'min_impurity_decrease': min_impurity_decrease,
+#     'bootstrap': bootstrap,
+# }
 
-random_forest_parameters = {
-    'n_estimators': n_estimators,
-    'criterion': criterion,
-    'max_depth': max_depth,
-    'min_samples_split': min_samples_split,
-    'min_samples_leaf': min_samples_leaf,
-    'min_weight_fraction_leaf': min_weight_fraction_leaf,
-    'max_features': max_features,
-    'max_leaf_nodes': max_leaf_nodes,
-    'min_impurity_decrease': min_impurity_decrease,
-    'bootstrap': bootstrap,
-}
+# random_forest = RandomForestClassifier()
 
-random_forest = RandomForestClassifier()
+# # Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
+# random_forest_searched = GridSearchCV(
+#     estimator=random_forest, param_grid=random_forest_parameters, verbose=1)
 
-# Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
-random_forest_searched = GridSearchCV(
-    estimator=random_forest, param_grid=random_forest_parameters, verbose=1)
-
-# RF w/ SMOTE
-random_forest_smote = random_forest.fit(
-    smote_train_X, smote_train_Y)
-print('Random Forest w/ SMOTE Test Set Accuracy: ', end="")
-print(random_forest_smote.score(smote_test_X, smote_test_Y))
-print('Random Forest w/ SMOTE Training Set Accuracy: ', end="")
-print(random_forest_smote.score(smote_train_X, smote_train_Y))
-# RF w/o SMOTE
-random_forest_processed = random_forest.fit(
-    processed_train_X, processed_train_Y)
-print('Random Forest w/o SMOTE Test Set Accuracy: ', end="")
-print(random_forest_processed.score(processed_test_X, processed_test_Y))
-print('Random Forest w/o SMOTE Training Set Accuracy: ', end="")
-print(random_forest_processed.score(processed_train_X, processed_train_Y))
-print()
+# # RF w/ SMOTE
+# random_forest_smote = random_forest.fit(
+#     smote_train_X, smote_train_Y)
+# print('Random Forest w/ SMOTE Test Set Accuracy: ', end="")
+# print(random_forest_smote.score(smote_test_X, smote_test_Y))
+# print('Random Forest w/ SMOTE Training Set Accuracy: ', end="")
+# print(random_forest_smote.score(smote_train_X, smote_train_Y))
+# # RF w/o SMOTE
+# random_forest_processed = random_forest.fit(
+#     processed_train_X, processed_train_Y)
+# print('Random Forest w/o SMOTE Test Set Accuracy: ', end="")
+# print(random_forest_processed.score(processed_test_X, processed_test_Y))
+# print('Random Forest w/o SMOTE Training Set Accuracy: ', end="")
+# print(random_forest_processed.score(processed_train_X, processed_train_Y))
+# print()
 
 # SVM
 print('\n')
@@ -141,7 +142,8 @@ svm_parameters = {
     'shrinking': shrinking,
     'probability': probability,
     'tol': tol,
-    'class_weight': class_weight
+    'class_weight': class_weight,
+   
 }
 
 svc = SVC()
@@ -166,35 +168,35 @@ print('SVM w/o SMOTE Training Set Accuracy: ', end="")
 print(svc_processed.score(processed_train_X, processed_train_Y))
 print()
 
-# TODO: MV
-#TODO: MV
-estimators = []
-model = svc
-estimators.append(('svm', model))
-ensemble = VotingClassifier(estimators)
-# https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html
+# # TODO: MV
+# #TODO: MV
+# estimators = []
+# model = svc
+# estimators.append(('svm', model))
+# ensemble = VotingClassifier(estimators)
+# # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html
 
-# TODO: Adjust MV Hyperparameters
-# MV Hyperparameter grids
-# https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
-# Refer to MV documentation for possible parameter values
+# # TODO: Adjust MV Hyperparameters
+# # MV Hyperparameter grids
+# # https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
+# # Refer to MV documentation for possible parameter values
 
-# Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
+# # Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
 
-print('---MAJORITY VOTING---')
-# MV w/ SMOTE
-majority_voting_smote = model_selection.cross_val_score(ensemble, smote_test_X, smote_test_Y)
-print('Majority Voting w/ SMOTE Test Set Accuracy: ', end="")
-print(majority_voting_smote.mean())
-majority_voting_smote_train = model_selection.cross_val_score(ensemble, smote_train_X, smote_train_Y)
-print('Majority Voting w/ SMOTE Training Set Accuracy: ', end="")
-print(majority_voting_smote_train.mean())
-# MV w/o SMOTE
-majority_voting_processed = model_selection.cross_val_score(ensemble, processed_test_X, processed_test_Y)
-print('Majority Voting w/o SMOTE Test Set Accuracy: ', end="")
-print(majority_voting_processed.mean())
-majority_voting_processed_train = model_selection.cross_val_score(ensemble, processed_train_X, processed_train_Y)
-print('Majority Voting w/o SMOTE Training Set Accuracy: ', end="")
-print(majority_voting_processed_train.mean())
-# TODO: Adjust MV Hyperparameters
-# Hyperparameters: refer to documentation.
+# print('---MAJORITY VOTING---')
+# # MV w/ SMOTE
+# majority_voting_smote = model_selection.cross_val_score(ensemble, smote_test_X, smote_test_Y)
+# print('Majority Voting w/ SMOTE Test Set Accuracy: ', end="")
+# print(majority_voting_smote.mean())
+# majority_voting_smote_train = model_selection.cross_val_score(ensemble, smote_train_X, smote_train_Y)
+# print('Majority Voting w/ SMOTE Training Set Accuracy: ', end="")
+# print(majority_voting_smote_train.mean())
+# # MV w/o SMOTE
+# majority_voting_processed = model_selection.cross_val_score(ensemble, processed_test_X, processed_test_Y)
+# print('Majority Voting w/o SMOTE Test Set Accuracy: ', end="")
+# print(majority_voting_processed.mean())
+# majority_voting_processed_train = model_selection.cross_val_score(ensemble, processed_train_X, processed_train_Y)
+# print('Majority Voting w/o SMOTE Training Set Accuracy: ', end="")
+# print(majority_voting_processed_train.mean())
+# # TODO: Adjust MV Hyperparameters
+# # Hyperparameters: refer to documentation.
