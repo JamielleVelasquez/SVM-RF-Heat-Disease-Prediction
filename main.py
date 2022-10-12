@@ -2,11 +2,10 @@
 
 from imblearn.over_sampling import SMOTE
 from sklearn.feature_selection import SelectKBest, chi2
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.svm import SVC
-from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score, learning_curve
-from sklearn.ensemble import VotingClassifier
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
+from sklearn.metrics import accuracy_score
 
 import matplotlib.pyplot as plt
 import pandas as pd
