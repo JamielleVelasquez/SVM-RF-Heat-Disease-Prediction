@@ -9,13 +9,9 @@ from sklearn.metrics import accuracy_score
 
 import matplotlib.pyplot as plt
 import pandas as pd
-<<<<<<< Updated upstream
-
-=======
 import numpy as np
 from sklearn.datasets import load_digits
 from sklearn.model_selection import validation_curve
->>>>>>> Stashed changes
 plt.style.use('ggplot')
 
 # Using panda.io to read the dataset
@@ -59,57 +55,6 @@ smote_train_X, smote_test_X, smote_train_Y, smote_test_Y = train_test_split(
 # Random Forest Hyperparameter grids
 # https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
 # Refer to Random Forest documentation for possible parameter values
-<<<<<<< Updated upstream
-
-n_estimators = [100]
-criterion = ["gini", "entropy", "log_loss"]
-# None or int
-max_depth = [None]
-min_samples_split = [2]
-min_samples_leaf = [1]
-min_weight_fraction_leaf = [0.0]
-max_features = ["sqrt", "log2", None]
-# None or int
-max_leaf_nodes = [None]
-min_impurity_decrease = [0.0]
-bootstrap = [True, False]
-
-random_forest_parameters = {
-    'n_estimators': n_estimators,
-    'criterion': criterion,
-    'max_depth': max_depth,
-    'min_samples_split': min_samples_split,
-    'min_samples_leaf': min_samples_leaf,
-    'min_weight_fraction_leaf': min_weight_fraction_leaf,
-    'max_features': max_features,
-    'max_leaf_nodes': max_leaf_nodes,
-    'min_impurity_decrease': min_impurity_decrease,
-    'bootstrap': bootstrap,
-}
-
-random_forest = RandomForestClassifier()
-
-# Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
-random_forest_searched = GridSearchCV(
-    estimator=random_forest, param_grid=random_forest_parameters, verbose=1)
-
-# RF w/ SMOTE
-random_forest_smote = random_forest_searched.fit(
-    smote_train_X, smote_train_Y)
-print('Random Forest w/ SMOTE Training Set Accuracy: ', end="")
-print(random_forest_smote.score(smote_train_X, smote_train_Y))
-print('Random Forest w/ SMOTE Test Set Accuracy: ', end="")
-print(random_forest_smote.score(smote_test_X, smote_test_Y))
-
-# RF w/o SMOTE
-random_forest_processed = random_forest.fit(
-    processed_train_X, processed_train_Y)
-print('Random Forest w/o SMOTE Training Set Accuracy: ', end="")
-print(random_forest_processed.score(processed_train_X, processed_train_Y))
-print('Random Forest w/o SMOTE Test Set Accuracy: ', end="")
-print(random_forest_processed.score(processed_test_X, processed_test_Y))
-print()
-=======
 # n_estimators = [100]
 # criterion = ["gini", "entropy", "log_loss"]
 # # None or int
@@ -215,7 +160,6 @@ plt.fill_between(
 )
 plt.legend(loc="best")
 plt.show()
->>>>>>> Stashed changes
 
 # SVM
 # https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
