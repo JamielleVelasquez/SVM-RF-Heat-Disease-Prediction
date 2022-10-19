@@ -9,13 +9,8 @@ from sklearn.metrics import accuracy_score
 
 import matplotlib.pyplot as plt
 import pandas as pd
-<<<<<<< Updated upstream
-
-=======
 import numpy as np
-from sklearn.datasets import load_digits
 from sklearn.model_selection import validation_curve
->>>>>>> Stashed changes
 plt.style.use('ggplot')
 
 # Using panda.io to read the dataset
@@ -38,7 +33,7 @@ processed_data_Y = processed_data_X[:, 10]
 # https://imbalanced-learn.org/stable/references/generated/imblearn.over_sampling.SMOTE.html
 smote_processed_data_X, smote_processed_data_Y = SMOTE(
 ).fit_resample(processed_data_X, processed_data_Y)
-# Hyperparameters: sampling_strategy - auto = resampling only the minority class
+# Hyperparameters: sampling_strategy - auto = resampling every class except the majority
 # k_neighbors - default = 5
 
 # 27 new entries were created by SMOTE to oversample the minority
@@ -52,170 +47,27 @@ smote_train_X, smote_test_X, smote_train_Y, smote_test_Y = train_test_split(
 # train_size - 70
 # shuffle default = True
 
-# TODO: RF
+# RF
 # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
 
-# TODO: Adjust RF Hyperparameters to avoid overfitting
-# Random Forest Hyperparameter grids
-# https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
-# Refer to Random Forest documentation for possible parameter values
-<<<<<<< Updated upstream
-
-n_estimators = [100]
-criterion = ["gini", "entropy", "log_loss"]
-# None or int
-max_depth = [None]
-min_samples_split = [2]
-min_samples_leaf = [1]
-min_weight_fraction_leaf = [0.0]
-max_features = ["sqrt", "log2", None]
-# None or int
-max_leaf_nodes = [None]
-min_impurity_decrease = [0.0]
-bootstrap = [True, False]
-
-random_forest_parameters = {
-    'n_estimators': n_estimators,
-    'criterion': criterion,
-    'max_depth': max_depth,
-    'min_samples_split': min_samples_split,
-    'min_samples_leaf': min_samples_leaf,
-    'min_weight_fraction_leaf': min_weight_fraction_leaf,
-    'max_features': max_features,
-    'max_leaf_nodes': max_leaf_nodes,
-    'min_impurity_decrease': min_impurity_decrease,
-    'bootstrap': bootstrap,
-}
-
-random_forest = RandomForestClassifier()
-
-# Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
-random_forest_searched = GridSearchCV(
-    estimator=random_forest, param_grid=random_forest_parameters, verbose=1)
+random_forest = RandomForestClassifier(n_estimators=1, max_features=1)
 
 # RF w/ SMOTE
-random_forest_smote = random_forest_searched.fit(
-    smote_train_X, smote_train_Y)
+random_forest_smote = random_forest.fit(smote_train_X, smote_train_Y)
+print('---RANDOM FOREST---')
 print('Random Forest w/ SMOTE Training Set Accuracy: ', end="")
 print(random_forest_smote.score(smote_train_X, smote_train_Y))
 print('Random Forest w/ SMOTE Test Set Accuracy: ', end="")
 print(random_forest_smote.score(smote_test_X, smote_test_Y))
-
 # RF w/o SMOTE
 random_forest_processed = random_forest.fit(
     processed_train_X, processed_train_Y)
-print('Random Forest w/o SMOTE Training Set Accuracy: ', end="")
-print(random_forest_processed.score(processed_train_X, processed_train_Y))
 print('Random Forest w/o SMOTE Test Set Accuracy: ', end="")
 print(random_forest_processed.score(processed_test_X, processed_test_Y))
-print()
-=======
-# n_estimators = [100]
-# criterion = ["gini", "entropy", "log_loss"]
-# # None or int
-# max_depth = [None]
-# min_samples_split = [2]
-# min_samples_leaf = [1]
-# min_weight_fraction_leaf = [0.0]
-# max_features = ["sqrt", "log2", None]
-# # None or int
-# max_leaf_nodes = [None]
-# min_impurity_decrease = [0.0]
-# bootstrap = [True, False]
-
-# random_forest_parameters = {
-#     'n_estimators': n_estimators,
-#     'criterion': criterion,
-#     'max_depth': max_depth,
-#     'min_samples_split': min_samples_split,
-#     'min_samples_leaf': min_samples_leaf,
-#     'min_weight_fraction_leaf': min_weight_fraction_leaf,
-#     'max_features': max_features,
-#     'max_leaf_nodes': max_leaf_nodes,
-#     'min_impurity_decrease': min_impurity_decrease,
-#     'bootstrap': bootstrap,
-# }
-
-rf = RandomForestClassifier(random_state = 1, n_estimators = 10)
-model_params = {
-    'n_estimators': [100],
-    'max_features': ['sqrt'],
-    'bootstrap': [True],
-    'min_samples_leaf': [1],
-    'min_samples_split': [2],
-    'max_depth': [2]}
-
-# clf = GridSearchCV(rf, model_params, cv=5)
-# model = clf.fit(smote_train_X, smote_train_Y)
-# print(clf.best_params_)
-# print('/n')
-# clf.best_params_
-
-# # Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
-# random_forest_searched = GridSearchCV(
-#     estimator=random_forest, param_grid=random_forest_parameters, verbose=1)
-
-# # RF w/ SMOTE
-# random_forest_smote = random_forest.fit(
-#     smote_train_X, smote_train_Y)
-# random_forest_smote_test = random_forest.fit(smote_test_X, smote_test_Y)
-# print('Random Forest w/ SMOTE Test Set Accuracy: ', end="")
-# print(random_forest_smote.score(smote_test_X, smote_test_Y))
-# print('Random Forest w/ SMOTE Training Set Accuracy: ', end="")
-# print(random_forest_smote.score(smote_train_X, smote_train_Y))
-rf.fit(smote_train_X, smote_train_Y)
-print('---RANDOM FOREST---')
-print('RF w/ SMOTE Test Set Accuracy: ', end="")
-print(rf.score(smote_test_X, smote_test_Y))
-print('RF w/ SMOTE Training Set Accuracy: ', end="")
-print(rf.score(smote_train_X, smote_train_Y))
-# # RF w/o SMOTE
-# random_forest_processed = random_forest.fit(
-#     processed_train_X, processed_train_Y)
-# random_forest_processed_test = random_forest.fit(processed_test_X, processed_test_Y)
-# print('Random Forest w/o SMOTE Test Set Accuracy: ', end="")
-# print(random_forest_processed.score(processed_test_X, processed_test_Y))
-# print('Random Forest w/o SMOTE Training Set Accuracy: ', end="")
-# print(random_forest_processed.score(processed_train_X, processed_train_Y))
-# print()
-rf.fit(processed_data_X, processed_data_Y)
-print('RF w/o SMOTE Test Set Accuracy: ', end="")
-print(rf.score(processed_test_X, processed_test_Y))
-print('RF w/o SMOTE Training Set Accuracy: ', end="")
-print(rf.score(processed_train_X, processed_train_Y))
+print('Random Forest w/o SMOTE Training Set Accuracy: ', end="")
+print(random_forest_processed.score(processed_train_X, processed_train_Y))
 print()
 
-param_range = np.logspace(-6, -1, 5)
-train_scores, test_scores = validation_curve(
-    RandomForestClassifier(),
-    smote_train_X,
-    smote_train_Y,
-    param_name="n_estimators",
-    param_range=param_range,
-    scoring="accuracy",
-    n_jobs=2,
-)
-train_scores_mean = np.mean(train_scores, axis=1)
-test_scores_mean = np.mean(test_scores, axis=1)
-train_scores_std = np.std(train_scores, axis=1)
-test_scores_std = np.std(test_scores, axis=1)
-
-lw = 2
-plt.plot(param_range, train_scores_mean,label="train", color="blue")
-plt.semilogx(
-    param_range, test_scores_mean, label="Cross-validation score", color="navy", lw=lw
-)
-plt.fill_between(
-    param_range,
-    test_scores_mean - test_scores_std,
-    test_scores_mean + test_scores_std,
-    alpha=0.2,
-    color="navy",
-    lw=lw,
-)
-plt.legend(loc="best")
-plt.show()
->>>>>>> Stashed changes
 
 # SVM
 # https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
