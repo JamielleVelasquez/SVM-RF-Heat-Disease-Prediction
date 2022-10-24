@@ -47,6 +47,20 @@ smote_train_X, smote_test_X, smote_train_Y, smote_test_Y = train_test_split(
 # train_size - 70
 # shuffle default = True
 
+# Scatterplot for unprocessed data
+# print(unprocessed_data_X)
+g1 = unprocessed_data_X.loc[:, "age":"target"]
+plt.scatter('trestbps', 'chol', data=g1);
+
+# Scatterplot for SMOTE treated data
+smoteDF = pd.DataFrame(smote_processed_data_X) # Convert SMOTE-treated data numpy array to DataFrame to use .loc
+smoteDF.to_csv("SMOTEData.csv")
+
+# print(smoteDF)
+g2 = smoteDF.loc[1025:1051,:] # New data from SMOTE
+# print (g2) 
+smoteDF.plot(x=3, y=4, kind='scatter');
+
 # RF
 # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
 
