@@ -115,49 +115,13 @@ print("with smote")
 print(classification_report(smote_test_Y, rf_predicted_smote))
 
 # SVM
-print('\n')
-
-
-#TODO: SVM
 # https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
 
-# TODO: Adjust SVM Hyperparameters
-# SVM Hyperparameter grids
-# https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
-# Refer to SVM documentation for possible parameter values
-
-C = [1.0]
-kernel = ["linear", "poly", "rbf", "sigmoid"]
-degree = [3]
-# "scale", "auto" or float
-gamma = ["scale", "auto"]
-coef0 = [0.0]
-shrinking = [True, False]
-probability = [True, False]
-tol = [1e-3]
-class_weight = [None, "balanced"]
-
-svm_parameters = {
-    'C': C,
-    'kernel': kernel,
-    'degree': degree,
-    'gamma': gamma,
-    'coef0': coef0,
-    'shrinking': shrinking,
-    'probability': probability,
-    'tol': tol,
-    'class_weight': class_weight
-}
-
-# svc = SVC(probability=True)
-
-# # Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
-# svc_searched = GridSearchCV(
-#     estimator=svc, param_grid=svm_parameters, verbose=1)
-svm = SVC(kernel='rbf', gamma=1)
+svm = SVC(kernel='rbf', gamma=1,)
 
 # SVM w/ SMOTE
-svm.fit(smote_train_X, smote_train_Y)
+svm_processed=svm.fit(smote_train_X, smote_train_Y)
+svm_predicted_nosmote = svm.predict(processed_test_X)
 print('---SUPPORT VECTOR MACHINE---')
 print('SVM w/ SMOTE Test Set Accuracy: ', end="")
 print(svm.score(smote_test_X, smote_test_Y))
@@ -165,44 +129,95 @@ print('SVM w/ SMOTE Training Set Accuracy: ', end="")
 print(svm.score(smote_train_X, smote_train_Y))
 
 # SVM w/o SMOTE
-svm.fit(processed_data_X, processed_data_Y)
+svm_smote = svm.fit(processed_data_X, processed_data_Y)
+svm_predicted_smote = svm.predict(smote_test_X)
+
 print('SVM w/o SMOTE Test Set Accuracy: ', end="")
 print(svm.score(processed_test_X, processed_test_Y))
 print('SVM w/o SMOTE Training Set Accuracy: ', end="")
 print(svm.score(processed_train_X, processed_train_Y))
 print()
 
-# validation graph
-param_range = np.logspace(-6, -1, 5)
-train_scores, test_scores = validation_curve(
-    SVC(),
+#learning curve
+train_sizes_abs, train_scores, test_scores = learning_curve(
+    svm_smote,
     smote_train_X,
     smote_train_Y,
-    param_name="gamma",
-    param_range=param_range,
-    scoring="accuracy",
-    n_jobs=2,
+    train_sizes=np.linspace(0.1, 1.0, 10)
 )
+
+# train_scores_mean = np.mean(train_scores, axis=1)
+test_scores_mean = np.mean(test_scores, axis=1)
+
+# plt.plot(train_sizes_abs, train_scores_mean, label="RF SMOTE-treated training set")
+plt.plot(train_sizes_abs, test_scores_mean,
+         label="SVM SMOTE-treated validation set")
+
+train_sizes_abs_test, train_scores, test_scores = learning_curve(
+    svm_smote,
+    smote_test_X,
+    smote_test_Y,
+    train_sizes=np.linspace(0.1, 1.0, 10)
+)
+
 train_scores_mean = np.mean(train_scores, axis=1)
 test_scores_mean = np.mean(test_scores, axis=1)
-train_scores_std = np.std(train_scores, axis=1)
-test_scores_std = np.std(test_scores, axis=1)
 
-lw = 2
-plt.plot(param_range, train_scores_mean, label="train", color="blue")
-plt.semilogx(
-    param_range, test_scores_mean, label="Cross-validation score", color="navy", lw=lw
+plt.plot(train_sizes_abs, np.mean([train_scores_mean, test_scores_mean], axis=0),
+         label="SVM SMOTE-treated test set")
+
+train_sizes_abs, train_scores, test_scores = learning_curve(
+    svm_processed,
+    processed_train_X,
+    processed_train_Y,
+    train_sizes=np.linspace(0.1, 1.0, 10)
 )
-plt.fill_between(
-    param_range,
-    test_scores_mean - test_scores_std,
-    test_scores_mean + test_scores_std,
-    alpha=0.2,
-    color="navy",
-    lw=lw,
+# train_scores_mean = np.mean(train_scores, axis=1)
+test_scores_mean = np.mean(test_scores, axis=1)
+
+# plt.plot(train_sizes_abs, train_scores_mean, label="RF Preprocessed training set")
+plt.plot(train_sizes_abs, test_scores_mean,
+         label="SVM Preprocessed validation set")
+
+train_sizes_abs_test, train_scores, test_scores = learning_curve(
+    svm_processed,
+    processed_train_X,
+    processed_train_Y,
+    train_sizes=np.linspace(0.1, 1.0, 10)
 )
-plt.legend(loc="best")
+
+train_scores_mean = np.mean(train_scores, axis=1)
+test_scores_mean = np.mean(test_scores, axis=1)
+
+plt.plot(train_sizes_abs, np.mean([train_scores_mean, test_scores_mean], axis=0),
+         label="SVM Preprocessed test set")
+
+plt.title("SVM Learning Curves")
+plt.xlabel("Training Set Subset Size")
+plt.ylabel("Accuracy")
+
+plt.legend()
 plt.show()
+
+#confusion matrix
+print("confusion matrix")
+print("\n")
+print("without smote")
+print("\n")
+svc_conf_matrix_nosmote = confusion_matrix(processed_test_Y,svm_predicted_nosmote)
+print(svc_conf_matrix_nosmote)
+print("\n")
+print("with smote")
+print("\n")
+svc_conf_matrix_smote = confusion_matrix(smote_test_Y,svm_predicted_smote)
+print(svc_conf_matrix_smote)
+
+#scores for stat
+print("\n")
+print("without smote")
+print(classification_report(processed_test_Y,svm_predicted_nosmote))
+print("with smote")
+print(classification_report(smote_test_Y,svm_predicted_smote))
 
 # MV
 # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html
