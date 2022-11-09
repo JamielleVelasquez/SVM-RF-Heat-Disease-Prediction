@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import sys
+
 np.set_printoptions(suppress=True, threshold=sys.maxsize)
 plt.style.use('ggplot')
 
@@ -21,17 +22,15 @@ unprocessed_data_y = unprocessed_data_X.loc[:, "target"]
 
 # Feature Selection using a chi-squared scoring function
 # https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectKBest.html
-feature_selection = SelectKBest(chi2, k=11)
+feature_selection = SelectKBest(chi2, k=13)
 processed_data_X = feature_selection.fit_transform(
     unprocessed_data_X, unprocessed_data_y)
-processed_data_Y = processed_data_X[:, 10]
+processed_data_Y = processed_data_X[:, 12]
 
 # Hyperparameters: score_func - chi2
 
-# These features had the 3 lowest chi2 scores and will be excluded:
+# This feature had the lowest chi2 scores and will be excluded:
 # fasting blood sugar > 120 mg/dl
-# resting electrocardiographic results (values 0,1,2)
-# number of major vessels (0-3) colored by flourosopy
 
 # SMOTE
 # https://imbalanced-learn.org/stable/references/generated/imblearn.over_sampling.SMOTE.html
@@ -40,7 +39,7 @@ smote_processed_data_X, smote_processed_data_Y = SMOTE(
 # Hyperparameters: sampling_strategy - auto = resampling only the minority class
 # k_neighbors - default = 5
 
-# 27 new entries were created by SMOTE to oversample the minority
+# ??? new entries were created by SMOTE to oversample the minority
 
 # 70%/30% Training Test Split
 processed_train_X, processed_test_X, processed_train_Y, processed_test_Y = train_test_split(
@@ -69,7 +68,7 @@ smoteDF.plot(x=3, y=4, kind='scatter')
 # RF
 # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
 
-random_forest = RandomForestClassifier(n_estimators=10)
+random_forest = RandomForestClassifier()
 
 # RF w/ SMOTE
 random_forest_smote = random_forest.fit(smote_train_X, smote_train_Y)
@@ -115,11 +114,11 @@ print(classification_report(processed_test_Y, rf_predicted_nosmote))
 print("with smote")
 print(classification_report(smote_test_Y, rf_predicted_smote))
 
+
 # SVM
 print('\n')
 
-
-#TODO: SVM
+# TODO: SVM
 # https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
 
 # TODO: Adjust SVM Hyperparameters
@@ -141,10 +140,10 @@ print(
 #TODO: SVM
 # https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
 
-svm = SVC(kernel='rbf', gamma=0.0000001,C=1000000)
+svm = SVC(kernel='rbf', gamma=0.0000001, C=1000000, random_state=1)
 
 # SVM w/ SMOTE
-svm_processed=svm.fit(smote_train_X, smote_train_Y)
+svm_processed = svm.fit(smote_train_X, smote_train_Y)
 svm_predicted_nosmote = svm.predict(processed_test_X)
 print('---SUPPORT VECTOR MACHINE---')
 print('SVM w/ SMOTE Test Set Accuracy: ', end="")
@@ -162,7 +161,7 @@ print('SVM w/o SMOTE Training Set Accuracy: ', end="")
 print(svm.score(processed_train_X, processed_train_Y))
 print()
 
-#learning curve
+# learning curve
 
 train_sizes_abs, train_scores, test_scores = learning_curve(
     svm_smote,
@@ -225,25 +224,26 @@ plt.ylabel("Accuracy")
 plt.legend()
 plt.show()
 
-#confusion matrix
+# confusion matrix
 print("confusion matrix")
 print("\n")
 print("without smote")
 print("\n")
-svc_conf_matrix_nosmote = confusion_matrix(processed_test_Y,svm_predicted_nosmote)
+svc_conf_matrix_nosmote = confusion_matrix(
+    processed_test_Y, svm_predicted_nosmote)
 print(svc_conf_matrix_nosmote)
 print("\n")
 print("with smote")
 print("\n")
-svc_conf_matrix_smote = confusion_matrix(smote_test_Y,svm_predicted_smote)
+svc_conf_matrix_smote = confusion_matrix(smote_test_Y, svm_predicted_smote)
 print(svc_conf_matrix_smote)
 
-#scores for stat
+# scores for stat
 print("\n")
 print("without smote")
-print(classification_report(processed_test_Y,svm_predicted_nosmote))
+print(classification_report(processed_test_Y, svm_predicted_nosmote))
 print("with smote")
-print(classification_report(smote_test_Y,svm_predicted_smote))
+print(classification_report(smote_test_Y, svm_predicted_smote))
 
 # MV
 # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html
@@ -252,18 +252,20 @@ print(classification_report(smote_test_Y,svm_predicted_smote))
 
 # estimators for ensembling MV
 estimators = [('RandomForest', random_forest), ('SVM', svm)]
-ensemble_smote = VotingClassifier(estimators, voting='hard', weights=[1,1]) #hard voting, because we are doing MV
+ensemble_smote = VotingClassifier(estimators, voting='hard', weights=[
+                                  1, 1])  # hard voting, because we are doing MV
 ensemble_smote.fit(smote_test_X, smote_test_Y)
 
-results_smote = model_selection.cross_val_score(ensemble_smote, smote_test_X, smote_test_Y, scoring='accuracy')
-print();
+results_smote = model_selection.cross_val_score(
+    ensemble_smote, smote_test_X, smote_test_Y, scoring='accuracy')
+print()
 print("Validation accuracy for Ensembling w/ SMOTE: ", end="")
 print(results_smote.mean())
 
 # # TODO: Adjust MV Hyperparameters
 # # Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
 
-# params = {'voting':['hard'], 
+# params = {'voting':['hard'],
 #           'weights':[(1,1)]}
 
 # grid_smote = GridSearchCV(estimator=ensemble_smote, param_grid=params, cv=2)
@@ -298,18 +300,20 @@ print(results_smote.mean())
 # plt.legend()
 # plt.show()
 
-ensemble_proc = VotingClassifier(estimators, voting='hard', weights=[1,1]) #hard voting, because we are doing MV
+ensemble_proc = VotingClassifier(estimators, voting='hard', weights=[
+                                 1, 1])  # hard voting, because we are doing MV
 ensemble_proc.fit(processed_test_X, processed_test_Y)
 
-results_proc = model_selection.cross_val_score(ensemble_proc, processed_test_X, processed_test_Y, scoring='accuracy')
-print();
+results_proc = model_selection.cross_val_score(
+    ensemble_proc, processed_test_X, processed_test_Y, scoring='accuracy')
+print()
 print("Validation accuracy for Ensembling w/o SMOTE: ", end="")
 print(results_proc.mean())
 
 
 # # TODO: Adjust MV Hyperparameters
 # Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
-# params = {'voting':['hard'], 
+# params = {'voting':['hard'],
 #           'weights':[(1,1)]}
 
 # grid_proc = GridSearchCV(estimator=ensemble_proc, param_grid=params, cv=2)
@@ -341,28 +345,28 @@ print(results_proc.mean())
 
 # skplt.metrics.plot_confusion_matrix(processed_test_Y, y_pred, figsize=(10, 8))
 # plt.show()
-#confusion matrix
+# confusion matrix
 print("confusion matrix")
 print("\n")
 print("without smote")
 print("\n")
 y_proc_pred = ensemble_proc.predict(processed_test_X)
-ensemble_matrix_proc = confusion_matrix(processed_test_Y,y_proc_pred)
+ensemble_matrix_proc = confusion_matrix(processed_test_Y, y_proc_pred)
 print(ensemble_matrix_proc)
 print("\n")
 print("with smote")
 print("\n")
 y_smote_pred = ensemble_smote.predict(smote_test_X)
-ensemble_matrix_smote = confusion_matrix(smote_test_Y,y_smote_pred)
+ensemble_matrix_smote = confusion_matrix(smote_test_Y, y_smote_pred)
 print(ensemble_matrix_smote)
 
-#scores for stat
+# scores for stat
 print("\n")
 print("without smote")
-print(classification_report(processed_test_Y,y_proc_pred))
+print(classification_report(processed_test_Y, y_proc_pred))
 print("with smote")
-print(classification_report(smote_test_Y,y_smote_pred))
+print(classification_report(smote_test_Y, y_smote_pred))
 
-# # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html
-# # https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
-# # Refer to MV documentation for possible parameter values
+# https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html
+# https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
+# Refer to MV documentation for possible parameter values
