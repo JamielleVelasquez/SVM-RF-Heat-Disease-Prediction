@@ -132,7 +132,8 @@ param_grid = dict(gamma=gamma_range, C=C_range)
 cv = StratifiedShuffleSplit(n_splits=5, test_size=0.2, random_state=42)
 grid = GridSearchCV(SVC(), param_grid=param_grid, cv=cv)
 grid.fit(processed_test_X, processed_test_Y)
-
+C_range = np.logspace(-2, 10, 13)
+gamma_range = np.logspace(-9, 3, 13)
 print(
     "The best parameters are %s with a score of %0.2f"
     % (grid.best_params_, grid.best_score_)
@@ -140,7 +141,7 @@ print(
 #TODO: SVM
 # https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
 
-svm = SVC(kernel='rbf', gamma=0.0000001, C=1000000, random_state=1)
+svm = SVC(kernel='rbf', gamma=0.000001,C=100000)
 
 # SVM w/ SMOTE
 svm_processed = svm.fit(smote_train_X, smote_train_Y)
