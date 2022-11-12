@@ -252,121 +252,117 @@ print(classification_report(smote_test_Y, svm_predicted_smote))
 
 # estimators for ensembling MV
 estimators = [('RandomForest', random_forest), ('SVM', svm)]
-ensemble_smote = VotingClassifier(estimators, voting='hard', weights=[
-                                  1, 1])  # hard voting, because we are doing MV
+ensemble_smote = VotingClassifier(estimators, voting='hard', weights=[1,1]) #hard voting, because we are doing MV
 ensemble_smote.fit(smote_test_X, smote_test_Y)
 
-results_smote = model_selection.cross_val_score(
-    ensemble_smote, smote_test_X, smote_test_Y, scoring='accuracy')
-print()
+results_smote = model_selection.cross_val_score(ensemble_smote, smote_test_X, smote_test_Y, scoring='accuracy')
+print();
 print("Validation accuracy for Ensembling w/ SMOTE: ", end="")
 print(results_smote.mean())
 
 # # TODO: Adjust MV Hyperparameters
-# # Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
+# Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
 
-# params = {'voting':['hard'],
-#           'weights':[(1,1)]}
+params = {'voting':['soft','hard'], 
+          'weights':[(1,1)]}
 
-# grid_smote = GridSearchCV(estimator=ensemble_smote, param_grid=params, cv=2)
+grid_smote = GridSearchCV(estimator=ensemble_smote, param_grid=params, cv=2)
 
-# grid_smote.fit(smote_train_X, smote_train_Y)
-# print("Best parameters for Ensembling + SMOTE: ", end="")
-# print(grid_smote.best_params_)
+grid_smote.fit(smote_train_X, smote_train_Y)
+print("Best parameters for Ensembling + SMOTE: ", end="")
+print(grid_smote.best_params_)
 
 #{'voting': 'hard', 'weights': (1, 1)}
 
-# validation graph
-# param_range = np.arange(0, 10, 1, dtype=int)
+#validation graph
+param_range = np.arange(0, 10, 1, dtype=int)
 
-# train_scores, test_scores = validation_curve(
-#     ensemble_smote,
-#     smote_train_X,
-#     smote_train_Y,
-#     param_name="n_jobs",
-#     param_range=param_range,
-# )
+train_scores, test_scores = validation_curve(
+    ensemble_smote,
+    smote_train_X,
+    smote_train_Y,
+    param_name="n_jobs",
+    param_range=param_range,
+)
 
-# train_scores_mean = np.mean(train_scores, axis=1)
-# test_scores_mean = np.mean(test_scores, axis=1)
+train_scores_mean = np.mean(train_scores, axis=1)
+test_scores_mean = np.mean(test_scores, axis=1)
 
-# plt.plot(param_range, train_scores_mean,
-#          label="njobs_train")
-# plt.plot(param_range, test_scores_mean, label="njobs_validation")
-# plt.title("MV SMOTE-treated Validation Curves")
-# plt.xlabel("Hyperparameter Value")
-# plt.ylabel("Accuracy")
+plt.plot(param_range, train_scores_mean,
+         label="njobs_train")
+plt.plot(param_range, test_scores_mean, label="njobs_validation")
+plt.title("MV SMOTE-treated Validation Curves")
+plt.xlabel("Hyperparameter Value")
+plt.ylabel("Accuracy")
 
-# plt.legend()
-# plt.show()
+plt.legend()
+plt.show()
 
-ensemble_proc = VotingClassifier(estimators, voting='hard', weights=[
-                                 1, 1])  # hard voting, because we are doing MV
+ensemble_proc = VotingClassifier(estimators, voting='hard', weights=[1,1]) #hard voting, because we are doing MV
 ensemble_proc.fit(processed_test_X, processed_test_Y)
 
-results_proc = model_selection.cross_val_score(
-    ensemble_proc, processed_test_X, processed_test_Y, scoring='accuracy')
-print()
+results_proc = model_selection.cross_val_score(ensemble_proc, processed_test_X, processed_test_Y, scoring='accuracy')
+print();
 print("Validation accuracy for Ensembling w/o SMOTE: ", end="")
 print(results_proc.mean())
 
 
 # # TODO: Adjust MV Hyperparameters
 # Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
-# params = {'voting':['hard'],
-#           'weights':[(1,1)]}
+params = {'voting':['soft','hard'], 
+          'weights':[(1,1)]}
 
-# grid_proc = GridSearchCV(estimator=ensemble_proc, param_grid=params, cv=2)
+grid_proc = GridSearchCV(estimator=ensemble_proc, param_grid=params, cv=2)
 
-# grid_proc.fit(processed_train_X, processed_train_Y)
-# print("Best parameters for Ensembling w/o SMOTE: ", end="")
-# print(grid_proc.best_params_)
+grid_proc.fit(processed_train_X, processed_train_Y)
+print("Best parameters for Ensembling w/o SMOTE: ", end="")
+print(grid_proc.best_params_)
 
 #{'voting': 'hard', 'weights': (1, 1)}
 
-# param_range = np.arange(1,10,1, dtype=int)
-# train_scores, test_scores = validation_curve(
-#     ensemble_proc,
-#     processed_test_X,
-#     processed_test_Y,
-#     param_name="n_jobs",
-#     param_range=param_range,
-# )
-# train_scores_mean = np.mean(train_scores, axis=1)
-# test_scores_mean = np.mean(test_scores, axis=1)
+param_range = np.arange(1,10,1, dtype=int)
+train_scores, test_scores = validation_curve(
+    ensemble_proc,
+    processed_test_X,
+    processed_test_Y,
+    param_name="n_jobs",
+    param_range=param_range,
+)
+train_scores_mean = np.mean(train_scores, axis=1)
+test_scores_mean = np.mean(test_scores, axis=1)
 
-# plt.plot(param_range, train_scores_mean,label="train", color="blue")
-# plt.plot(param_range, test_scores_mean,label="test", color="red")
+plt.plot(param_range, train_scores_mean,label="train", color="blue")
+plt.plot(param_range, test_scores_mean,label="test", color="red")
 
-# plt.legend()
-# plt.show()
-# y_pred = ensemble_proc.predict(processed_test_X)
-# print(classification_report(processed_test_Y, y_pred))
+plt.legend()
+plt.show()
+y_pred = ensemble_proc.predict(processed_test_X)
+print(classification_report(processed_test_Y, y_pred))
 
-# skplt.metrics.plot_confusion_matrix(processed_test_Y, y_pred, figsize=(10, 8))
-# plt.show()
-# confusion matrix
+skplt.metrics.plot_confusion_matrix(processed_test_Y, y_pred, figsize=(10, 8))
+plt.show()
+#confusion matrix
 print("confusion matrix")
 print("\n")
 print("without smote")
 print("\n")
 y_proc_pred = ensemble_proc.predict(processed_test_X)
-ensemble_matrix_proc = confusion_matrix(processed_test_Y, y_proc_pred)
+ensemble_matrix_proc = confusion_matrix(processed_test_Y,y_proc_pred)
 print(ensemble_matrix_proc)
 print("\n")
 print("with smote")
 print("\n")
 y_smote_pred = ensemble_smote.predict(smote_test_X)
-ensemble_matrix_smote = confusion_matrix(smote_test_Y, y_smote_pred)
+ensemble_matrix_smote = confusion_matrix(smote_test_Y,y_smote_pred)
 print(ensemble_matrix_smote)
 
-# scores for stat
+#scores for stat
 print("\n")
 print("without smote")
-print(classification_report(processed_test_Y, y_proc_pred))
+print(classification_report(processed_test_Y,y_proc_pred))
 print("with smote")
-print(classification_report(smote_test_Y, y_smote_pred))
+print(classification_report(smote_test_Y,y_smote_pred))
 
-# https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html
-# https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
-# Refer to MV documentation for possible parameter values
+# # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html
+# # https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
+# # Refer to MV documentation for possible parameter values
