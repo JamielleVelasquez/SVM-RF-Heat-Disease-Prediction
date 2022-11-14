@@ -53,3 +53,38 @@ plt.ylabel("Accuracy")
 
 plt.legend()
 plt.show()
+
+# Performance of the Models Bar Graph Code
+
+model_labels = ['RF w/ SMOTE', 'RF w/o SMOTE']
+
+accuracy = [random_forest_smote_accuracy, random_forest_processed_accuracy, ]
+
+precision = [random_forest_smote_report['macro avg']['precision'],
+             random_forest_processed_report['macro avg']['precision']]
+recall = [random_forest_smote_report['macro avg']['recall'],
+          random_forest_processed_report['macro avg']['recall'], ]
+f1_score = [random_forest_smote_report['macro avg']['f1-score'],
+            random_forest_processed_report['macro avg']['f1-score']]
+x = np.arange(len(model_labels))
+print(x)
+width = 0.1
+fig, ax = plt.subplots()
+rects1 = ax.bar(x - width - width/2, accuracy, width, label='Accuracy')
+rects2 = ax.bar(x - width/2, precision, width, label='Precision')
+rects3 = ax.bar(x + width/2, recall, width, label='Recall')
+rects4 = ax.bar(x + width + width/2, f1_score, width, label='F1-Score')
+
+ax.set_title('Performance of the Models')
+ax.set_xticks(x, model_labels)
+ax.legend()
+
+ax.bar_label(rects1, padding=3, fmt='%.2f')
+ax.bar_label(rects2, padding=3, fmt='%.2f')
+ax.bar_label(rects3, padding=3, fmt='%.2f')
+ax.bar_label(rects4, padding=3, fmt='%.2f')
+
+fig.tight_layout()
+
+plt.ylim(0.75, 0.90)
+plt.show()

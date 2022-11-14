@@ -5,7 +5,7 @@ from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split, GridSearchCV, learning_curve
-from sklearn.metrics import classification_report, ConfusionMatrixDisplay
+from sklearn.metrics import classification_report, ConfusionMatrixDisplay, accuracy_score
 import matplotlib.pyplot as plt
 
 import pandas as pd
@@ -73,35 +73,31 @@ random_forest = RandomForestClassifier(bootstrap=True, max_depth=None, max_leaf_
                                        n_estimators=50, criterion="log_loss", max_features="log2", min_samples_split=2, min_samples_leaf=1, random_state=50)
 
 # RF w/ SMOTE
-random_forest_smote = random_forest.fit(smote_train_X, smote_train_Y)
-
 print('---RANDOM FOREST---')
-print('Random Forest w/ SMOTE Training Set Accuracy: ', end="")
-print(random_forest_smote.score(smote_train_X, smote_train_Y))
-print('Random Forest w/ SMOTE Test Set Accuracy: ', end="")
-print(random_forest_smote.score(smote_test_X, smote_test_Y))
+
+random_forest_smote = random_forest.fit(smote_train_X, smote_train_Y)
+random_forest_smote_predictions = random_forest_smote.predict(smote_test_X)
+random_forest_smote_accuracy = accuracy_score(
+    smote_test_Y, random_forest_smote_predictions)
+print('Random Forest w/ SMOTE Accuracy: ', end="")
+print(random_forest_smote_accuracy)
 
 # RF w/o SMOTE
 random_forest_processed = random_forest.fit(
     processed_train_X, processed_train_Y)
-print('Random Forest w/o SMOTE Training Accuracy: ', end="")
-print(random_forest_processed.score(smote_train_X, smote_train_Y))
-print('Random Forest w/o SMOTE Test Set Accuracy: ', end="")
-print(random_forest_processed.score(processed_test_X, processed_test_Y))
-
-random_forest_smote_predictions = random_forest_smote.predict(smote_test_X)
 random_forest_processed_predictions = random_forest_processed.predict(
     processed_test_X)
+random_forest_processed_accuracy = accuracy_score(
+    processed_test_Y, random_forest_processed_predictions)
+print('Random Forest w/o SMOTE Accuracy: ', end="")
+print(random_forest_processed_accuracy)
 
 # Paste RF Confusion Matrix Graph Code Here
 
-# Scores for Statistics
-
-print("\n")
-print("Random Forest w/ SMOTE Classification Report")
-print(classification_report(smote_test_Y, random_forest_smote_predictions))
-print("Random Forest w/o SMOTE Classification Report")
-print(classification_report(processed_test_Y, random_forest_processed_predictions))
+random_forest_smote_report = classification_report(
+    smote_test_Y, random_forest_smote_predictions, output_dict=True)
+random_forest_processed_report = classification_report(
+    processed_test_Y, random_forest_processed_predictions, output_dict=True)
 
 # Paste RF Learning Curve Graph Code Here
 
