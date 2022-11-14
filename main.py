@@ -108,109 +108,61 @@ print(classification_report(processed_test_Y, random_forest_processed_prediction
 # SVM
 print('\n')
 # SVM Hyperparameter grids
-
+#Grid Search
 C_range = np.logspace(-2, 10, 13)
 gamma_range = np.logspace(-9, 3, 13)
-param_grid = {'C': C_range, 'gamma': gamma_range}
-svm_processed = GridSearchCV(SVC(kernel='rbf'), param_grid)
+param_grid = dict(gamma=gamma_range, C=C_range)
+cv = StratifiedShuffleSplit(n_splits=5, test_size=0.2, random_state=42)
+grid = GridSearchCV(SVC(), param_grid=param_grid, cv=cv)
+grid.fit(unprocessed_data_X, unprocessed_data_y)
+
+print(
+    "The best parameters are %s with a score of %0.2f"
+    % (grid.best_params_, grid.best_score_)
+)
+
+
+svm = SVC(kernel='rbf', gamma=0.00001,C=10000)
 
 # SVM w/ SMOTE
-svm_smote = svm_processed.fit(smote_train_X, smote_train_Y)
+svm_smote=svm.fit(smote_train_X, smote_train_Y)
 svm_predicted_smote = svm_smote.predict(smote_test_X)
 print('---SUPPORT VECTOR MACHINE---')
-svm_accuracy = accuracy_score(smote_test_Y, svm_predicted_smote)
-print(f"Using SVM W/ smote we get an accuracy of {round(svm_accuracy*100,2)}%")
+print('SVM w/ SMOTE Test Set Accuracy: ', end="")
+print(svm_smote.score(smote_test_X, smote_test_Y))
+print('SVM w/ SMOTE Training Set Accuracy: ', end="")
+print(svm_smote.score(smote_train_X, smote_train_Y))
 
 # SVM w/o SMOTE
-svm_nosmote = svm_processed.fit(processed_data_X, processed_data_Y)
+svm_nosmote = svm.fit(processed_data_X, processed_data_Y)
 svm_predicted_nosmote = svm_nosmote.predict(processed_test_X)
-svm_accuracy_ns = accuracy_score(processed_test_Y, svm_predicted_nosmote)
-print(
-    f"Using SVM W/O smote we get an accuracy of {round(svm_accuracy_ns*100,2)}%")
 
-# learning curve
+print('SVM w/o SMOTE Test Set Accuracy: ', end="")
+print(svm_nosmote.score(processed_test_X, processed_test_Y))
+print('SVM w/o SMOTE Training Set Accuracy: ', end="")
+print(svm_nosmote.score(processed_train_X, processed_train_Y))
+print()
 
-train_sizes_abs, train_scores, test_scores = learning_curve(
-    svm_smote,
-    smote_train_X,
-    smote_train_Y,
-    train_sizes=np.linspace(0.1, 1.0, 10)
-)
-
-# train_scores_mean = np.mean(train_scores, axis=1)
-test_scores_mean = np.mean(test_scores, axis=1)
-
-# plt.plot(train_sizes_abs, train_scores_mean, label="RF SMOTE-treated training set")
-plt.plot(train_sizes_abs, test_scores_mean,
-         label="SVM SMOTE-treated validation set")
-
-train_sizes_abs_test, train_scores, test_scores = learning_curve(
-    svm_smote,
-    smote_test_X,
-    smote_test_Y,
-    train_sizes=np.linspace(0.1, 1.0, 10)
-)
-
-train_scores_mean = np.mean(train_scores, axis=1)
-test_scores_mean = np.mean(test_scores, axis=1)
-
-plt.plot(train_sizes_abs, np.mean([train_scores_mean, test_scores_mean], axis=0),
-         label="RF SMOTE-treated test set")
-
-train_sizes_abs, train_scores, test_scores = learning_curve(
-    svm_processed,
-    processed_train_X,
-    processed_train_Y,
-    train_sizes=np.linspace(0.1, 1.0, 10)
-)
-
-# train_scores_mean = np.mean(train_scores, axis=1)
-test_scores_mean = np.mean(test_scores, axis=1)
-
-# plt.plot(train_sizes_abs, train_scores_mean, label="RF Preprocessed training set")
-plt.plot(train_sizes_abs, test_scores_mean,
-         label="SVM Preprocessed validation set")
-
-train_sizes_abs_test, train_scores, test_scores = learning_curve(
-    svm_processed,
-    processed_train_X,
-    processed_train_Y,
-    train_sizes=np.linspace(0.1, 1.0, 10)
-)
-
-train_scores_mean = np.mean(train_scores, axis=1)
-test_scores_mean = np.mean(test_scores, axis=1)
-
-plt.plot(train_sizes_abs, np.mean([train_scores_mean, test_scores_mean], axis=0),
-         label="SVM Preprocessed test set")
-
-plt.title("RF Learning Curves")
-plt.xlabel("Training Set Subset Size")
-plt.ylabel("Accuracy")
-
-plt.legend()
-plt.show()
-
-# confusion matrix
+#confusion matrix
 print("confusion matrix")
 print("\n")
 print("without smote")
 print("\n")
-svc_conf_matrix_nosmote = confusion_matrix(
-    processed_test_Y, svm_predicted_nosmote)
+svc_conf_matrix_nosmote = confusion_matrix(processed_test_Y,svm_predicted_nosmote)
 print(svc_conf_matrix_nosmote)
 print("\n")
 print("with smote")
 print("\n")
-svc_conf_matrix_smote = confusion_matrix(smote_test_Y, svm_predicted_smote)
+svc_conf_matrix_smote = confusion_matrix(smote_test_Y,svm_predicted_smote)
 print(svc_conf_matrix_smote)
 
-# scores for stat
+#scores for stat
 print("\n")
 print("without smote")
-print(classification_report(processed_test_Y, svm_predicted_nosmote))
+print(classification_report(processed_test_Y,svm_predicted_nosmote))
 print("with smote")
-print(classification_report(smote_test_Y, svm_predicted_smote))
+print(classification_report(smote_test_Y,svm_predicted_smote))
+
 
 # MV
 # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html
