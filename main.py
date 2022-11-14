@@ -117,18 +117,12 @@ print(classification_report(smote_test_Y, rf_predicted_smote))
 
 # SVM
 print('\n')
-
-# TODO: Adjust SVM Hyperparameters
 # SVM Hyperparameter grids
-# https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
-# Refer to SVM documentation for possible parameter values
-Cs = [0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000, 100000, 1000000]
-gammas = [0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 1]
-param_grid = {'C': Cs, 'gamma' : gammas}
-svm_processed = GridSearchCV(SVC(kernel='rbf', probability=True), param_grid, cv=10)
 
-#TODO: SVM
-# https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
+C_range = np.logspace(-2, 10, 13)
+gamma_range = np.logspace(-9, 3, 13)
+param_grid = {'C': C_range, 'gamma' : gamma_range}
+svm_processed = GridSearchCV(SVC(kernel='rbf'), param_grid)
 
 # SVM w/ SMOTE
 svm_smote=svm_processed.fit(smote_train_X, smote_train_Y)
@@ -233,7 +227,7 @@ print(classification_report(smote_test_Y, svm_predicted_smote))
 #TODO: MV
 
 # estimators for ensembling MV
-estimators = [('RandomForest', random_forest), ('SVM', svm)]
+estimators = [('RandomForest', random_forest), ('SVM', svm_processed)]
 ensemble_smote = VotingClassifier(estimators, voting='hard', weights=[
                                   1, 1])  # hard voting, because we are doing MV
 ensemble_smote.fit(smote_test_X, smote_test_Y)
