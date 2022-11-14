@@ -5,7 +5,7 @@ from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split, GridSearchCV, learning_curve
-from sklearn.metrics import classification_report, ConfusionMatrixDisplay
+from sklearn.metrics import classification_report, ConfusionMatrixDisplay, accuracy_score
 import matplotlib.pyplot as plt
 
 import pandas as pd
@@ -73,39 +73,36 @@ random_forest = RandomForestClassifier(bootstrap=True, max_depth=None, max_leaf_
                                        n_estimators=50, criterion="log_loss", max_features="log2", min_samples_split=2, min_samples_leaf=1, random_state=50)
 
 # RF w/ SMOTE
-random_forest_smote = random_forest.fit(smote_train_X, smote_train_Y)
-
 print('---RANDOM FOREST---')
-print('Random Forest w/ SMOTE Training Set Accuracy: ', end="")
-print(random_forest_smote.score(smote_train_X, smote_train_Y))
-print('Random Forest w/ SMOTE Test Set Accuracy: ', end="")
-print(random_forest_smote.score(smote_test_X, smote_test_Y))
+
+random_forest_smote = random_forest.fit(smote_train_X, smote_train_Y)
+random_forest_smote_predictions = random_forest_smote.predict(smote_test_X)
+random_forest_smote_accuracy = accuracy_score(
+    smote_test_Y, random_forest_smote_predictions)
+print('Random Forest w/ SMOTE Accuracy: ', end="")
+print(random_forest_smote_accuracy)
 
 # RF w/o SMOTE
 random_forest_processed = random_forest.fit(
     processed_train_X, processed_train_Y)
-print('Random Forest w/o SMOTE Training Accuracy: ', end="")
-print(random_forest_processed.score(smote_train_X, smote_train_Y))
-print('Random Forest w/o SMOTE Test Set Accuracy: ', end="")
-print(random_forest_processed.score(processed_test_X, processed_test_Y))
-
-random_forest_smote_predictions = random_forest_smote.predict(smote_test_X)
 random_forest_processed_predictions = random_forest_processed.predict(
     processed_test_X)
+random_forest_processed_accuracy = accuracy_score(
+    processed_test_Y, random_forest_processed_predictions)
+print('Random Forest w/o SMOTE Accuracy: ', end="")
+print(random_forest_processed_accuracy)
 
 # Paste RF Confusion Matrix Graph Code Here
 
-# Scores for Statistics
-
-print("\n")
-print("Random Forest w/ SMOTE Classification Report")
-print(classification_report(smote_test_Y, random_forest_smote_predictions))
-print("Random Forest w/o SMOTE Classification Report")
-print(classification_report(processed_test_Y, random_forest_processed_predictions))
+random_forest_smote_report = classification_report(
+    smote_test_Y, random_forest_smote_predictions, output_dict=True)
+random_forest_processed_report = classification_report(
+    processed_test_Y, random_forest_processed_predictions, output_dict=True)
 
 # Paste RF Learning Curve Graph Code Here
 
 # SVM
+svm = SVC(kernel='rbf', gamma=0.00001,C=10000, probability=True)
 print('\n')
 # SVM Hyperparameter grids
 #gridsearch for SVM
@@ -160,16 +157,12 @@ print(classification_report(smote_test_Y,svm_predicted_smote))
 #TODO: MV
 
 # estimators for ensembling MV
-estimators = [('RandomForest', random_forest), ('SVM', svm_processed)]
-ensemble_smote = VotingClassifier(estimators, voting='hard', weights=[
+estimators = [('RandomForest', random_forest), ('SVM', svm)]
+ensemble_smote = VotingClassifier(estimators=estimators, voting='hard', weights=[
                                   1, 1])  # hard voting, because we are doing MV
 ensemble_smote.fit(smote_test_X, smote_test_Y)
 
-results_smote = model_selection.cross_val_score(
-    ensemble_smote, smote_test_X, smote_test_Y, scoring='accuracy')
-print()
-print("Validation accuracy for Ensembling w/ SMOTE: ", end="")
-print(results_smote.mean())
+
 
 # # TODO: Adjust MV Hyperparameters
 # Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
@@ -177,11 +170,14 @@ print(results_smote.mean())
 params = {'voting': ['soft', 'hard'],
           'weights': [(1, 1)]}
 
-grid_smote = GridSearchCV(estimator=ensemble_smote, param_grid=params, cv=2)
+cv = StratifiedShuffleSplit(n_splits=5, test_size=0.2, random_state=42)
+grid_smote = GridSearchCV(ensemble_smote, param_grid=params, cv=cv)
 
 grid_smote.fit(smote_train_X, smote_train_Y)
 print("Best parameters for Ensembling + SMOTE: ", end="")
 print(grid_smote.best_params_)
+print("Score: ", end="")
+print(grid_smote.best_score_)
 
 #{'voting': 'hard', 'weights': (1, 1)}
 
@@ -201,35 +197,40 @@ test_scores_mean = np.mean(test_scores, axis=1)
 
 plt.plot(param_range, train_scores_mean,
          label="njobs_train")
-plt.plot(param_range, test_scores_mean, label="njobs_validation")
+plt.plot(param_range, test_scores_mean, label="njobs_test")
 plt.title("MV SMOTE-treated Validation Curves")
 plt.xlabel("Hyperparameter Value")
 plt.ylabel("Accuracy")
 
 plt.legend()
 plt.show()
+y_pred = ensemble_smote.predict(smote_test_X)
+print(classification_report(smote_test_Y, y_pred))
+
+results_smote = model_selection.cross_val_score(
+    ensemble_smote, smote_test_X, smote_test_Y, scoring='accuracy')
+
+print("Validation accuracy for Ensembling w/ SMOTE: ", end="")
+print(results_smote.mean())
+print()
 
 ensemble_proc = VotingClassifier(estimators, voting='hard', weights=[
                                  1, 1])  # hard voting, because we are doing MV
 ensemble_proc.fit(processed_test_X, processed_test_Y)
-
-results_proc = model_selection.cross_val_score(
-    ensemble_proc, processed_test_X, processed_test_Y, scoring='accuracy')
-print()
-print("Validation accuracy for Ensembling w/o SMOTE: ", end="")
-print(results_proc.mean())
-
 
 # # TODO: Adjust MV Hyperparameters
 # Exhaustive Grid Search with Cross Validation for Optimal Hyperparameters
 params = {'voting': ['soft', 'hard'],
           'weights': [(1, 1)]}
 
-grid_proc = GridSearchCV(estimator=ensemble_proc, param_grid=params, cv=2)
+cv = StratifiedShuffleSplit(n_splits=5, test_size=0.2, random_state=42)
+grid_proc = GridSearchCV(ensemble_proc, param_grid=params, cv=cv)
 
 grid_proc.fit(processed_train_X, processed_train_Y)
 print("Best parameters for Ensembling w/o SMOTE: ", end="")
 print(grid_proc.best_params_)
+print("Score: ", end="")
+print(grid_proc.best_score_)
 
 #{'voting': 'hard', 'weights': (1, 1)}
 
@@ -244,17 +245,24 @@ train_scores, test_scores = validation_curve(
 train_scores_mean = np.mean(train_scores, axis=1)
 test_scores_mean = np.mean(test_scores, axis=1)
 
-plt.plot(param_range, train_scores_mean, label="train", color="blue")
-plt.plot(param_range, test_scores_mean, label="test", color="red")
+plt.plot(param_range, train_scores_mean, label="njobs_train")
+plt.plot(param_range, test_scores_mean, label="njobs_test")
 
 plt.legend()
 plt.show()
 y_pred = ensemble_proc.predict(processed_test_X)
 print(classification_report(processed_test_Y, y_pred))
 
-skplt.metrics.plot_confusion_matrix(processed_test_Y, y_pred, figsize=(10, 8))
-plt.show()
+results_proc = model_selection.cross_val_score(
+    ensemble_proc, processed_test_X, processed_test_Y, scoring='accuracy')
+
+print("Validation accuracy for Ensembling w/o SMOTE: ", end="")
+print(results_proc.mean())
+
+# skplt.metrics.plot_confusion_matrix(processed_test_Y, y_pred, figsize=(10, 8))
+# plt.show()
 # confusion matrix
+print()
 print("confusion matrix")
 print("\n")
 print("without smote")
