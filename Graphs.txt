@@ -1,0 +1,55 @@
+# Feature Selection Graph Code
+
+feature_names = ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg",
+                 "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"]
+plt.bar(feature_names, feature_selection.scores_)
+plt.xlabel("Features")
+plt.ylabel("Score")
+plt.title("Feature Selection Scores")
+plt.show()
+
+# RF Confusion Matrix Graph Code
+
+cm = confusion_matrix(smote_test_Y, random_forest_smote_predictions)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+disp.plot()
+plt.title("SMOTE-treated RF Confusion Matrix")
+plt.show()
+
+cm = confusion_matrix(processed_test_Y, random_forest_processed_predictions)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+disp.plot()
+plt.title("Preprocessed RF Confusion Matrix")
+plt.show()
+
+# Learning Curve Graph Code
+
+train_sizes_abs, train_scores, test_scores = learning_curve(
+    random_forest_smote,
+    smote_processed_data_X,
+    smote_processed_data_Y,
+    train_sizes=np.linspace(0.1, 1.0, 10)
+)
+
+test_scores_mean = np.mean(test_scores, axis=1)
+
+plt.plot(train_sizes_abs, test_scores_mean,
+         label="SMOTE-treated RF Learning Curve")
+
+train_sizes_abs, train_scores, test_scores = learning_curve(
+    random_forest_processed,
+    processed_data_X,
+    processed_data_Y,
+    train_sizes=np.linspace(0.1, 1.0, 10)
+)
+test_scores_mean = np.mean(test_scores, axis=1)
+
+plt.plot(train_sizes_abs, test_scores_mean,
+         label="Preprocessed RF Learning Curve")
+
+plt.title("RF Learning Curves")
+plt.xlabel("Training Subset Size")
+plt.ylabel("Accuracy")
+
+plt.legend()
+plt.show()
