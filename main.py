@@ -108,21 +108,11 @@ print(classification_report(processed_test_Y, random_forest_processed_prediction
 # SVM
 print('\n')
 # SVM Hyperparameter grids
-#Grid Search
-C_range = np.logspace(-2, 10, 13)
-gamma_range = np.logspace(-9, 3, 13)
-param_grid = dict(gamma=gamma_range, C=C_range)
-cv = StratifiedShuffleSplit(n_splits=5, test_size=0.2, random_state=42)
-grid = GridSearchCV(SVC(), param_grid=param_grid, cv=cv)
-grid.fit(unprocessed_data_X, unprocessed_data_y)
-
-print(
-    "The best parameters are %s with a score of %0.2f"
-    % (grid.best_params_, grid.best_score_)
-)
-
-
-svm = SVC(kernel='rbf', gamma=0.00001,C=10000)
+#gridsearch for SVM
+Cs = [1, 10 ,100, 1000, 10000,100000]
+gammas = [0.001, 0.01, 0.0001, 0.00001,0.000001]
+param_grid = {'C': Cs, 'gamma' : gammas}
+svm = GridSearchCV(SVC(kernel='rbf', probability=True), param_grid, cv=10)
 
 # SVM w/ SMOTE
 svm_smote=svm.fit(smote_train_X, smote_train_Y)
