@@ -8,6 +8,21 @@ plt.ylabel("Score")
 plt.title("Feature Selection Scores")
 plt.show()
 
+# SMOTE Scatterplot Code
+# print(unprocessed_data_X)
+g1 = unprocessed_data_X.loc[:, "age":"target"]
+plt.scatter('trestbps', 'chol', data=g1)
+
+# Scatterplot for SMOTE treated data
+# Convert SMOTE-treated data numpy array to DataFrame to use .loc
+smoteDF = pd.DataFrame(smote_processed_data_X)
+smoteDF.to_csv("SMOTEData.csv")
+
+# print(smoteDF)
+g2 = smoteDF.loc[1025:1051, :]  # New data from SMOTE
+# print (g2)
+smoteDF.plot(x=3, y=4, kind='scatter')
+
 # RF Confusion Matrix Graph Code
 
 cm = confusion_matrix(smote_test_Y, random_forest_smote_predictions)
