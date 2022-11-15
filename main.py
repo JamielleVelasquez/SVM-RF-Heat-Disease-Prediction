@@ -1,6 +1,8 @@
 # Before running this file, activate the venv using "sklearn-venv\Scripts\activate"
 import scikitplot as skplt
 from imblearn.over_sampling import SMOTE
+from imblearn.under_sampling import RandomUnderSampler
+from imblearn.pipeline import Pipeline
 from sklearn import model_selection
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
@@ -37,10 +39,22 @@ processed_data_Y = feature_selection_data[:, 12]
 
 # SMOTE
 # https://imbalanced-learn.org/stable/references/generated/imblearn.over_sampling.SMOTE.html
-smote_processed_data_X, smote_processed_data_Y = SMOTE(
-    k_neighbors=10, random_state=2).fit_resample(processed_data_X, processed_data_Y)
+
+over = SMOTE(k_neighbors=2, sampling_strategy=0.9)
+under = RandomUnderSampler(sampling_strategy=0.9)
+steps = [('o', over), ('u', under)]
+pipeline = Pipeline(steps=steps)
+smote_processed_data_X, smote_processed_data_Y = pipeline.fit_resample(processed_data_X, processed_data_Y)
+
+# smote_processed_data_X, smote_processed_data_Y = SMOTE(
+# ).fit_resample(processed_data_X, processed_data_Y)
+# processed_train_X, processed_test_X, processed_train_Y, processed_test_Y = train_test_split(
+#     processed_data_X, processed_data_Y, test_size=0.3, random_state=1)
+# smote_train_X, smote_test_X, smote_train_Y, smote_test_Y = train_test_split(
+#     smote_processed_data_X, smote_processed_data_Y, test_size=0.3, random_state=1)
+
 # Hyperparameters: sampling_strategy - auto = resampling only the minority class
-# k_neighbors = 10
+# k_neighbors = 2
 
 # ??? new entries were created by SMOTE to oversample the minority
 
@@ -119,8 +133,8 @@ svm_predicted_smote = svm_smote.predict(smote_test_X)
 print('---SUPPORT VECTOR MACHINE---')
 print('SVM w/ SMOTE Test Set Accuracy: ', end="")
 print(svm_smote.score(smote_test_X, smote_test_Y))
-print('SVM w/ SMOTE Training Set Accuracy: ', end="")
-print(svm_smote.score(smote_train_X, smote_train_Y))
+# print('SVM w/ SMOTE Training Set Accuracy: ', end="")
+# print(svm_smote.score(smote_train_X, smote_train_Y))
 
 # SVM w/o SMOTE
 svm_nosmote = svm.fit(processed_data_X, processed_data_Y)
@@ -128,8 +142,8 @@ svm_predicted_nosmote = svm_nosmote.predict(processed_test_X)
 
 print('SVM w/o SMOTE Test Set Accuracy: ', end="")
 print(svm_nosmote.score(processed_test_X, processed_test_Y))
-print('SVM w/o SMOTE Training Set Accuracy: ', end="")
-print(svm_nosmote.score(processed_train_X, processed_train_Y))
+# print('SVM w/o SMOTE Training Set Accuracy: ', end="")
+# print(svm_nosmote.score(processed_train_X, processed_train_Y))
 print()
 
 #confusion matrix
