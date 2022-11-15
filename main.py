@@ -1,6 +1,5 @@
 # Before running this file, activate the venv using "sklearn-venv\Scripts\activate"
 from imblearn.over_sampling import SMOTE
-from imblearn.combine import SMOTEENN
 from imblearn.under_sampling import RandomUnderSampler
 from imblearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectKBest, chi2
@@ -18,7 +17,8 @@ import sys
 np.set_printoptions(suppress=True, threshold=sys.maxsize)
 
 # Using panda.io to read the dataset
-unprocessed_data_X = pd.read_csv("heartdisease300.csv")
+unprocessed_data_X = pd.read_csv("heart.csv")
+# unprocessed_data_X = pd.read_csv("heart_expanded.csv")
 unprocessed_data_y = unprocessed_data_X.loc[:, "target"]
 
 # Feature Selection using a chi-squared scoring function
@@ -34,23 +34,17 @@ processed_data_Y = feature_selection_data[:, 12]
 # Hyperparameters: score_func - chi2
 
 # This feature had the lowest chi2 scores and will be excluded:
-# fasting blood sugar > 120 mg/dl
+# fasting blood sugar (fbs)
 
-# SMOTEEN
-# https://imbalanced-learn.org/stable/references/generated/imblearn.combine.SMOTEENN.html
-over = SMOTE(k_neighbors=2, sampling_strategy=0.9, random_state=2)
-# Hyperparameters: sampling_strategy - 0.9 = Resample the minority to match 90% of the majority class
-under = RandomUnderSampler(sampling_strategy=0.9, random_state=2)
+# SMOTE
+# https://imbalanced-learn.org/stable/references/generated/imblearn.over_sampling.SMOTE.html
+smote = SMOTE(k_neighbors=2, sampling_strategy=0.9, random_state=1)
 
-steps = [('o', over), ('u', under)]
-pipeline = Pipeline(steps=steps)
-smote_processed_data_X, smote_processed_data_Y = pipeline.fit_resample(
+smote_processed_data_X, smote_processed_data_Y = smote.fit_resample(
     processed_data_X, processed_data_Y)
-
 # Hyperparameters: sampling_strategy - 0.9 = Resample the minority to match 90% of the majority class
 
-
-# ??? new entries were created by SMOTE to oversample the minority
+# 8 new entries were created by SMOTE to oversample the minority
 
 # Paste SMOTE Scatterplot Code Here
 
@@ -63,12 +57,11 @@ smote_train_X, smote_test_X, smote_train_Y, smote_test_Y = train_test_split(
 # train_size - 70
 # shuffle default = True
 
-
 # RF
 # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
 
 random_forest = RandomForestClassifier(bootstrap=True, max_depth=None, max_leaf_nodes=None, min_impurity_decrease=0.0, min_weight_fraction_leaf=0.0,
-                                       n_estimators=50, criterion="log_loss", max_features="log2", min_samples_split=2, min_samples_leaf=1, random_state=50)
+                                       n_estimators=50, criterion="log_loss", max_features="log2", min_samples_split=2, min_samples_leaf=1, random_state=12)
 
 # RF w/ SMOTE
 print('---RANDOM FOREST---')
@@ -109,7 +102,7 @@ print('SVM w/ SMOTE Accuracy: ', end="")
 print(svm_smote_accuracy)
 
 # SVM w/o SMOTE
-svm_processed = svm.fit(processed_data_X, processed_data_Y)
+svm_processed = svm.fit(processed_train_X, processed_train_Y)
 svm_processed_predictions = svm_processed.predict(processed_test_X)
 svm_processed_accuracy = accuracy_score(
     processed_test_Y, svm_processed_predictions)
@@ -127,7 +120,7 @@ mv = VotingClassifier(
     estimators=[('RandomForest', random_forest), ('SVM', svm)], voting='hard')
 
 # MV w/ SMOTE
-ensemble_smote = mv.fit(smote_test_X, smote_test_Y)
+ensemble_smote = mv.fit(smote_train_X, smote_train_Y)
 ensemble_smote_predictions = ensemble_smote.predict(smote_test_X)
 ensemble_smote_accuracy = accuracy_score(
     smote_test_Y, ensemble_smote_predictions)
@@ -136,7 +129,7 @@ print("MV w/ SMOTE Accuracy: ", end="")
 print(ensemble_smote_accuracy)
 
 # MV w/o SMOTE
-ensemble_processed = mv.fit(processed_test_X, processed_test_Y)
+ensemble_processed = mv.fit(processed_train_X, processed_train_Y)
 ensemble_processed_predictions = ensemble_processed.predict(processed_test_X)
 ensemble_processed_accuracy = accuracy_score(
     processed_test_Y, ensemble_processed_predictions)
@@ -210,5 +203,5 @@ ax.bar_label(rects4, padding=2, fmt='%.2f')
 
 fig.tight_layout()
 
-plt.ylim(0.80, 1)
+plt.ylim(0.80, 0.90)
 plt.show()
